@@ -7,6 +7,8 @@ tech repair, etc.) and book a service slot. Use this folder as-is as your Phase
 ASG) instead of writing app code from scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+![Vendor schedule](screenshots/schedule.png)
+![Booking form with live price estimate](screenshots/booking-form.png)
 
 ## Features
 

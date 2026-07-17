@@ -7,6 +7,8 @@ Use this folder as-is as your Phase 2/3 starting point so you can focus on the A
 infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+![Seat picker](screenshots/seat-select.png)
+![QR tickets on the confirmation page](screenshots/qr-tickets.png)
 
 ## Features
 

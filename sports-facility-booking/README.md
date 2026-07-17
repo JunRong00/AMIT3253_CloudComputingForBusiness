@@ -8,6 +8,8 @@ AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from
 scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+![Facility schedule grid](screenshots/schedule.png)
+![Booking form with time-slot availability](screenshots/booking-form.png)
 
 This is the most feature-complete of the five scenario folders — treat it as a
 reference for how far you *could* take a scenario, not the bar every group needs to

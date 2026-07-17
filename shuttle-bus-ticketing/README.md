@@ -7,6 +7,8 @@ on the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code 
 scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+![Route schedule](screenshots/schedule.png)
+![Ticket booking form with route availability](screenshots/booking-form.png)
 
 ## Features
 

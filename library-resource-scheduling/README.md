@@ -8,6 +8,8 @@ this folder as-is as your Phase 2/3 starting point so you can focus on the AWS
 infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+![Browse books](screenshots/books.png)
+![Equipment loan form with time-slot availability](screenshots/equipment-loan-form.png)
 
 ## Features
 
