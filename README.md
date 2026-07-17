@@ -167,6 +167,16 @@ post_max_size = 12M
 then restart the web server (`sudo systemctl restart httpd`, or `php-fpm` if that's how
 PHP is running).
 
+## Phase 1: planning the design and estimating cost
+
+This phase has no code — nothing in this repo does it for you. Per the assignment
+brief: produce an architecture diagram (AWS Architecture Icons / a reference
+architecture as a starting point), a solution overview diagram of the end-user journey
+and data flow through whichever scenario you picked, and a 12-month cost estimate for
+the `us-east-1` region using the AWS Pricing Calculator. Do this before touching the
+lab environment — it's meant to inform the VPC/EC2/RDS choices you make in Phases 2
+and 3 below, not follow from them.
+
 ## Phase 2: running it on a single EC2 instance
 
 1. Launch an EC2 instance (Amazon Linux 2023), install a LAMP stack:
