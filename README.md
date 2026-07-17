@@ -16,6 +16,14 @@ or reference the others.
 | `shuttle-bus-ticketing/` | Campus Shuttle Bus & Transport Ticketing | Shuttle route tickets |
 | `vendor-services-booking/` | On-Campus Commercial & Vendor Services | Vendor service slot bookings with a price estimate |
 
+## Screenshots
+
+| | |
+|---|---|
+| **Sports Facility Booking**<br>![Sports facility booking homepage](sports-facility-booking/screenshots/homepage.png) | **Library Resource Scheduling**<br>![Library resource scheduling homepage](library-resource-scheduling/screenshots/homepage.png) |
+| **Event Ticketing**<br>![Event ticketing homepage](event-ticketing/screenshots/homepage.png) | **Shuttle Bus Ticketing**<br>![Shuttle bus ticketing homepage](shuttle-bus-ticketing/screenshots/homepage.png) |
+| **Vendor Services Booking**<br>![Vendor services booking homepage](vendor-services-booking/screenshots/homepage.png) | |
+
 Each folder is self-contained:
 
 - `schema.sql` — creates the database, tables (including a `users` table), and seed data.

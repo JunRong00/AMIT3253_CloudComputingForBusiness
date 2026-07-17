@@ -7,6 +7,8 @@ for a date and time slot, or borrow a physical book for a 2-week loan period. Us
 this folder as-is as your Phase 2/3 starting point so you can focus on the AWS
 infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Homepage screenshot](screenshots/homepage.png)
+
 ## Features
 
 **Public site**

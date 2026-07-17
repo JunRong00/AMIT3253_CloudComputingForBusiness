@@ -6,6 +6,8 @@ talks), buy tickets against a live inventory count, and simulate paying for them
 Use this folder as-is as your Phase 2/3 starting point so you can focus on the AWS
 infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
+![Homepage screenshot](screenshots/homepage.png)
+
 ## Features
 
 **Public site**
