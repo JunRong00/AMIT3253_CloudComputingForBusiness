@@ -7,8 +7,13 @@ Use this folder as-is as your Phase 2/3 starting point so you can focus on the A
 infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+*Homepage — browse events as photo cards, general admission or assigned seating.*
+
 ![Seat picker](screenshots/seat-select.png)
+*`seat_select.php` — pick exact seats for events with assigned seating.*
+
 ![QR tickets on the confirmation page](screenshots/qr-tickets.png)
+*Confirmation page — one QR code per ticket, generated client-side, for admin check-in.*
 
 ## Features
 

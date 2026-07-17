@@ -8,8 +8,13 @@ this folder as-is as your Phase 2/3 starting point so you can focus on the AWS
 infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+*Homepage — browse rooms, equipment and books, plus "My Bookings".*
+
 ![Browse books](screenshots/books.png)
+*`books.php` — browse the book catalog with copies-available counts.*
+
 ![Equipment loan form with time-slot availability](screenshots/equipment-loan-form.png)
+*Equipment loan form — fully-loaned-out/past time slots are greyed out before you submit.*
 
 ## Features
 

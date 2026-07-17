@@ -7,8 +7,13 @@ on the AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code 
 scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+*Homepage — browse shuttle routes as photo cards.*
+
 ![Route schedule](screenshots/schedule.png)
+*`schedule.php` — which routes already have bookings for a chosen date.*
+
 ![Ticket booking form with route availability](screenshots/booking-form.png)
+*Booking form — already-departed/fully-booked routes are greyed out before you submit.*
 
 ## Features
 

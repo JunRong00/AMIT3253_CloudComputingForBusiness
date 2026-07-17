@@ -7,8 +7,13 @@ tech repair, etc.) and book a service slot. Use this folder as-is as your Phase
 ASG) instead of writing app code from scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+*Homepage — browse vendors as photo cards, with a price-per-unit tag.*
+
 ![Vendor schedule](screenshots/schedule.png)
+*`schedule.php` — booked-vs-capacity per slot for a chosen vendor and date.*
+
 ![Booking form with live price estimate](screenshots/booking-form.png)
+*Booking form — live price estimate as you set a quantity; full/past slots are greyed out.*
 
 ## Features
 

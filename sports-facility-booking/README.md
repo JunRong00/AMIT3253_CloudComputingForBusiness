@@ -8,8 +8,13 @@ AWS infrastructure (VPC, EC2, RDS, ELB, ASG) instead of writing app code from
 scratch.
 
 ![Homepage screenshot](screenshots/homepage.png)
+*Homepage — browse facilities as photo cards.*
+
 ![Facility schedule grid](screenshots/schedule.png)
+*`schedule.php` — availability grid for a facility's courts by date.*
+
 ![Booking form with time-slot availability](screenshots/booking-form.png)
+*Booking form — already-booked/closed/past time slots are greyed out before you submit.*
 
 This is the most feature-complete of the five scenario folders — treat it as a
 reference for how far you *could* take a scenario, not the bar every group needs to
