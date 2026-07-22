@@ -140,6 +140,13 @@ at 5MB. Where they're stored depends on `AWS_S3_BUCKET` in `config.php`:
   signing over PHP's built-in stream wrapper — no AWS SDK, no Composer), and
   `image_url` stores the full object URL.
 
+**This doesn't move anything already stored.** The demo photos seeded via
+`schema.sql` (and any photo uploaded before `AWS_S3_BUCKET` was set) already have a
+local `/uploads/...` path saved in the database — switching S3 on only affects the
+*next* upload/replace through the admin panel, it doesn't rewrite existing rows.
+Migrating those existing local images to S3 isn't built here; that's left as an
+exercise.
+
 Credentials are tried two ways: first an IAM role attached to the EC2 instance (via
 the metadata service, nothing hardcoded), and if that's not available — e.g. an AWS
 Academy Learner Lab where you can't attach or inspect IAM roles yourself — explicit

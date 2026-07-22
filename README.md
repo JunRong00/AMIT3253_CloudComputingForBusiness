@@ -161,6 +161,12 @@ extension) and caps it at 5MB. Where it's *stored* depends on `AWS_S3_BUCKET` in
   "No photo yet" placeholder work identically either way; only where the bytes
   physically live changes.
 
+**This doesn't move anything already stored.** Each app's seed data (in `schema.sql`)
+already has demo photos saved as local `/uploads/...` paths, and any photo uploaded
+before `AWS_S3_BUCKET` was set is the same — switching S3 on only changes where the
+*next* upload/replace goes, it doesn't rewrite existing rows to point at S3. Migrating
+existing local images over isn't built here; that's left as an exercise.
+
 **Credentials — two ways, tried in this order:**
 1. **An IAM role attached to the EC2 instance/launch template** (`s3:PutObject` +
    `s3:DeleteObject` on the bucket) — credentials are fetched automatically at request
