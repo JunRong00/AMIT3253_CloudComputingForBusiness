@@ -115,7 +115,8 @@ Regular users register their own accounts via the Register page.
 | Path | Purpose |
 |---|---|
 | `schema.sql` | Creates the database, all tables, and seed data |
-| `config.php` | Database connection — reads `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` |
+| `config.php` | Database connection — reads `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME`, plus S3 photo storage config |
+| `healthz.php` | ALB health check target — `200` if the DB connection works, `500` otherwise |
 | `auth.php` | Session helpers: `current_user_id()`, `require_login()`, `require_admin()`, etc. |
 | `helpers.php` | Image upload/delete helpers, faculty list, entity image URL resolver |
 | `register.php` / `login.php` / `logout.php` | Account creation and session login (passwords hashed, never plaintext) |
@@ -129,14 +130,25 @@ Regular users register their own accounts via the Register page.
 | `uploads/` | Uploaded facility photos and layout diagrams |
 | `style.css` | Shared styling (navbar, cards, forms, tables, dark/light mode) |
 
-## Facility photos: local uploads now, S3 as an exercise
+## Facility photos: local disk by default, S3 already wired up (just needs your bucket)
 
-`facilities.image_url` stores a path like `/uploads/facility_xxx.jpg`. Uploads are
-validated with `getimagesize()` (not just the file extension), capped at 5MB, and
-saved into `uploads/`. **Deliberately not wired to Amazon S3** — that's a natural
-next exercise: swap `move_uploaded_file()` for an S3 `PutObject` call and store the
-resulting object URL in the same `image_url` column; the `<img>` rendering doesn't
-need to change either way.
+Uploads are validated with `getimagesize()` (not just the file extension) and capped
+at 5MB. Where they're stored depends on `AWS_S3_BUCKET` in `config.php`:
+- **Unset (default)**: saved into `uploads/`, `facilities.image_url` stores a path
+  like `/uploads/facility_xxx.jpg`. Nothing to configure.
+- **Set**: uploaded to that S3 bucket instead (hand-written Signature Version 4
+  signing over PHP's built-in stream wrapper — no AWS SDK, no Composer), and
+  `image_url` stores the full object URL. Credentials come from the IAM role attached
+  to the EC2 instance (via the metadata service), not from anything hardcoded here.
+
+This matters once there's more than one EC2 instance behind the ALB — a photo saved to
+local disk only exists on whichever instance handled the upload, so any other instance
+shows a broken image for it. **What's still on you**: creating the bucket + a public-read
+bucket policy (or CloudFront), attaching the IAM role with `s3:PutObject`/
+`s3:DeleteObject`, and setting `AWS_S3_BUCKET`/`AWS_S3_REGION`. The signing logic is
+verified against AWS's own SigV4 test vectors and the local-disk path is tested live
+end-to-end, but the actual S3 round-trip hasn't been tested against a real bucket —
+there wasn't one available to test against here.
 
 Notes for EC2 deployment:
 - `uploads/` needs to be writable by the web server user: `chmod 775 uploads` after
@@ -148,6 +160,10 @@ Notes for EC2 deployment:
   post_max_size = 12M
   ```
   then restart the web server.
+- Point your ALB target group's health check at `healthz.php` — it returns `200` only
+  if the database connection actually succeeds (`500` otherwise), so a target that
+  can't reach RDS gets correctly pulled out of rotation instead of still receiving
+  traffic.
 
 ## Phase 2: running it on a single EC2 instance
 

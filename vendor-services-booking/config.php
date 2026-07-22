@@ -37,11 +37,49 @@ $user   = getenv('DB_USER') ?: 'root';
 $pass   = getenv('DB_PASS') ?: '';
 $dbname = getenv('DB_NAME') ?: 'vendor_services_db';
 
-$conn = new mysqli($host, $user, $pass, $dbname);
+// @-suppressed: even with MYSQLI_REPORT_OFF (no exception), a failed
+// connection still emits a PHP-level warning straight into the response
+// body. With display_errors on, that warning is output before the
+// connect_error check below runs, which flushes headers with the default
+// 200 status - making the http_response_code(500) call too late to matter.
+// Suppressing it here keeps the failure check as the single source of truth
+// for what gets reported.
+$conn = @new mysqli($host, $user, $pass, $dbname);
 if ($conn->connect_error) {
+    // Signal unhealthy to an ALB health check (or anything else probing this
+    // page) instead of silently returning 200 OK with an error message body -
+    // otherwise a target group would keep routing real traffic to an
+    // instance that can't reach its database.
+    http_response_code(500);
     die('Database connection failed: ' . $conn->connect_error);
 }
 
 // Keep MySQL's NOW()/CURRENT_TIMESTAMP in step with the PHP timezone above -
 // otherwise created_at/returned_at etc. would still be recorded 8 hours off.
 $conn->query("SET time_zone = '+08:00'");
+
+// ============================================================================
+// Photo storage (S3) - optional
+// ============================================================================
+// LOCAL / DOCKER (current default below, both blank): uploaded photos are
+// saved to this app's local uploads/ folder, exactly as before. Nothing to
+// configure for local development.
+//
+// Once there's more than one EC2 instance behind an ALB/ASG, local disk
+// uploads only exist on whichever instance handled that request - the next
+// instance (or a newly launched ASG instance) won't have the file, so the
+// image breaks. Uploading to S3 instead fixes this, since every instance
+// reads/writes the same bucket. This is already wired up (see helpers.php)
+// - to turn it on:
+//   1. Create an S3 bucket and a bucket policy allowing public s3:GetObject
+//      on it (or put CloudFront in front of it instead).
+//   2. Attach an IAM role to your EC2 instance/launch template with an
+//      s3:PutObject + s3:DeleteObject permission scoped to that bucket -
+//      credentials are then fetched automatically from the instance's own
+//      metadata service (IMDSv2), so nothing is hardcoded here.
+//   3. Set these two values (env vars, or hardcode them like DB_HOST above):
+//      AWS_S3_BUCKET = your-bucket-name
+//      AWS_S3_REGION = us-east-1
+// ============================================================================
+define('AWS_S3_BUCKET', getenv('AWS_S3_BUCKET') ?: '');
+define('AWS_S3_REGION', getenv('AWS_S3_REGION') ?: 'us-east-1');
