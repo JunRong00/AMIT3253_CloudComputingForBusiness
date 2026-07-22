@@ -1,4 +1,36 @@
 <?php
+// ============================================================================
+// Load .env (optional)
+// ============================================================================
+// Lets DB_HOST/DB_USER/... and AWS_S3_BUCKET/... etc. below be set from a
+// plain KEY=VALUE text file in this folder instead of Apache SetEnv
+// directives - copy .env.example to .env and fill in real values there.
+// .env itself is git-ignored (see .gitignore) so real credentials never get
+// committed to this public repo - only .env.example, with blank placeholder
+// values, is tracked. A value already set as a real environment variable
+// (e.g. via Apache SetEnv) takes priority over .env and is left untouched.
+// No web server restart needed - config.php re-reads .env on every request.
+// ============================================================================
+$envFile = __DIR__ . '/.env';
+if (is_readable($envFile)) {
+    foreach (file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $line) {
+        $line = trim($line);
+        if ($line === '' || $line[0] === '#' || strpos($line, '=') === false) {
+            continue;
+        }
+        [$key, $value] = explode('=', $line, 2);
+        $key = trim($key);
+        $value = trim($value);
+        if ((str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+            (str_starts_with($value, "'") && str_ends_with($value, "'"))) {
+            $value = substr($value, 1, -1);
+        }
+        if (getenv($key) === false) {
+            putenv("$key=$value");
+        }
+    }
+}
+
 // Use legacy-style error reporting: mysqli functions return false on
 // failure (e.g. a foreign-key violation) instead of throwing an exception,
 // so ordinary "if (!$stmt->execute())" checks work as expected below.
@@ -17,9 +49,10 @@ date_default_timezone_set('Asia/Kuala_Lumpur');
 // same machine using the credentials below.
 //
 // AWS RDS (Phase 3 of the assignment): once you provision an Amazon RDS
-// MySQL instance, point this app at it. Recommended: set these as
-// environment variables on your EC2 instance / Apache vhost so this file
-// never needs to change between local, EC2, and RDS:
+// MySQL instance, point this app at it. Recommended: copy .env.example to
+// .env in this folder (see the loader above) and set these there - or, if
+// you prefer, set them as Apache SetEnv directives instead. Either way this
+// file never needs to change between local, EC2, and RDS:
 //
 //   DB_HOST = your-db-identifier.xxxxxxxxxxxx.us-east-1.rds.amazonaws.com
 //   DB_USER = admin              (the master username you set when creating the RDS instance)
@@ -73,7 +106,8 @@ $conn->query("SET time_zone = '+08:00'");
 // - to turn it on:
 //   1. Create an S3 bucket and a bucket policy allowing public s3:GetObject
 //      on it (or put CloudFront in front of it instead).
-//   2. Set AWS_S3_BUCKET / AWS_S3_REGION below.
+//   2. Set AWS_S3_BUCKET / AWS_S3_REGION in your .env file (copy
+//      .env.example to .env - see the loader at the top of this file).
 //   3. Give this app permission to write to that bucket, either:
 //      a) Attach an IAM role to your EC2 instance/launch template with an
 //         s3:PutObject + s3:DeleteObject permission scoped to the bucket -
@@ -83,12 +117,12 @@ $conn->query("SET time_zone = '+08:00'");
 //         IAM roles yourself, use the temporary Access Key ID / Secret
 //         Access Key / Session Token shown in the lab's "AWS Details"
 //         panel instead - set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY /
-//         AWS_SESSION_TOKEN below as environment variables (never
-//         hardcode/commit them - this repo is public). These expire and
-//         rotate periodically in a Learner Lab; if uploads that were
+//         AWS_SESSION_TOKEN in your .env file (never commit real values -
+//         .env is git-ignored, only .env.example is tracked). These expire
+//         and rotate periodically in a Learner Lab; if uploads that were
 //         working suddenly start failing, that's almost always why - grab
-//         fresh values from "AWS Details" and update the environment
-//         variables.
+//         fresh values from "AWS Details" and update .env (no restart
+//         needed).
 // ============================================================================
 define('AWS_S3_BUCKET', getenv('AWS_S3_BUCKET') ?: '');
 define('AWS_S3_REGION', getenv('AWS_S3_REGION') ?: 'us-east-1');

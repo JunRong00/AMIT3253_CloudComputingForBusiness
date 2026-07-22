@@ -1,3 +1,7 @@
 .DS_Store
 **/.DS_Store
 Thumbs.db
+
+# Real per-app env files (may contain DB/AWS credentials) - only the
+# .env.example placeholders are meant to be committed
+.env

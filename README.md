@@ -169,12 +169,16 @@ extension) and caps it at 5MB. Where it's *stored* depends on `AWS_S3_BUCKET` in
 2. **Explicit temporary credentials**, for AWS Academy Learner Labs where you can't
    attach or even inspect IAM roles yourself: copy the Access Key ID / Secret Access
    Key / Session Token from the lab's "AWS Details" panel and set them as
-   `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` environment
-   variables (never hardcode them in `config.php` — **this repo is public**, and a
-   committed key gets scraped within minutes). These are genuinely temporary and
+   `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN`. Each app loads
+   these from a `.env` file in its own folder (copy `.env.example` to `.env`, fill in
+   the values — `config.php` reads it automatically, see the loader at the top of the
+   file), or you can set them as Apache environment variables instead if you'd rather
+   not use a file. Never hardcode them directly in `config.php` — **this repo is
+   public**, and a committed key gets scraped within minutes; `.env` itself is
+   git-ignored so it's never committed either. These are genuinely temporary and
    **expire and rotate periodically** — if uploads that were working suddenly start
-   failing, that's almost always why; grab fresh values and update the environment
-   variable.
+   failing, that's almost always why; grab fresh values and update `.env` (no restart
+   needed) or the environment variable.
 
 **Why this matters for ASG specifically**: once there's more than one EC2 instance
 behind the ALB, a photo saved to local disk only exists on whichever instance happened

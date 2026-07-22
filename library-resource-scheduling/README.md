@@ -159,10 +159,12 @@ at 5MB. Where they're stored depends on `AWS_S3_BUCKET` in `config.php`:
 Credentials are tried two ways: first an IAM role attached to the EC2 instance (via
 the metadata service, nothing hardcoded), and if that's not available — e.g. an AWS
 Academy Learner Lab where you can't attach or inspect IAM roles yourself — explicit
-`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN` environment variables
-(copy these from the lab's "AWS Details" panel; **never hardcode them, this repo is
-public**). Those temporary credentials expire and rotate periodically — if uploads
-that were working suddenly fail, refresh them.
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN`. Set these in a
+`.env` file (copy `.env.example` to `.env`, fill in the values from the lab's "AWS
+Details" panel — `.env` is git-ignored, so it's never committed to this public repo),
+or as Apache environment variables if you'd rather not use a file. Those temporary
+credentials expire and rotate periodically — if uploads that were working suddenly
+fail, refresh them and, if using `.env`, no restart is needed.
 
 This matters once there's more than one EC2 instance behind the ALB — a photo saved to
 local disk only exists on whichever instance handled the upload, so any other instance
@@ -225,9 +227,13 @@ Notes for EC2 deployment:
    sudo mysql_secure_installation
    mysql -u root -p < schema.sql
    ```
-7. **Point the app at the database**: edit `config.php` (or export
-   `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` in Apache's environment, e.g. via a
-   `SetEnv` directive in `/etc/httpd/conf.d/`) to match your MySQL credentials.
+7. **Point the app at the database**: copy `.env.example` to `.env` and set
+   `DB_HOST`/`DB_USER`/`DB_PASS`/`DB_NAME` there to match your MySQL
+   credentials (`config.php` loads `.env` automatically - see the loader at
+   the top of the file; `.env` is git-ignored so it's never committed). Or,
+   if you'd rather not use a file, edit `config.php` directly, or export the
+   same names as Apache environment variables via a `SetEnv` directive in
+   `/etc/httpd/conf.d/`.
 8. **Test it**: open `http://<public-ipv4>/` in a browser.
 
 ## Phase 3: moving the database to RDS
