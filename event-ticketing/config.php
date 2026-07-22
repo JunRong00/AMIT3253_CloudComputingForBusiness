@@ -61,7 +61,7 @@ $conn->query("SET time_zone = '+08:00'");
 // ============================================================================
 // Photo storage (S3) - optional
 // ============================================================================
-// LOCAL / DOCKER (current default below, both blank): uploaded photos are
+// LOCAL / DOCKER (current default below, all blank): uploaded photos are
 // saved to this app's local uploads/ folder, exactly as before. Nothing to
 // configure for local development.
 //
@@ -73,13 +73,25 @@ $conn->query("SET time_zone = '+08:00'");
 // - to turn it on:
 //   1. Create an S3 bucket and a bucket policy allowing public s3:GetObject
 //      on it (or put CloudFront in front of it instead).
-//   2. Attach an IAM role to your EC2 instance/launch template with an
-//      s3:PutObject + s3:DeleteObject permission scoped to that bucket -
-//      credentials are then fetched automatically from the instance's own
-//      metadata service (IMDSv2), so nothing is hardcoded here.
-//   3. Set these two values (env vars, or hardcode them like DB_HOST above):
-//      AWS_S3_BUCKET = your-bucket-name
-//      AWS_S3_REGION = us-east-1
+//   2. Set AWS_S3_BUCKET / AWS_S3_REGION below.
+//   3. Give this app permission to write to that bucket, either:
+//      a) Attach an IAM role to your EC2 instance/launch template with an
+//         s3:PutObject + s3:DeleteObject permission scoped to the bucket -
+//         credentials are then fetched automatically from the instance's
+//         own metadata service (IMDSv2), nothing to set below. Tried first.
+//      b) On an AWS Academy Learner Lab where you can't attach or inspect
+//         IAM roles yourself, use the temporary Access Key ID / Secret
+//         Access Key / Session Token shown in the lab's "AWS Details"
+//         panel instead - set AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY /
+//         AWS_SESSION_TOKEN below as environment variables (never
+//         hardcode/commit them - this repo is public). These expire and
+//         rotate periodically in a Learner Lab; if uploads that were
+//         working suddenly start failing, that's almost always why - grab
+//         fresh values from "AWS Details" and update the environment
+//         variables.
 // ============================================================================
 define('AWS_S3_BUCKET', getenv('AWS_S3_BUCKET') ?: '');
 define('AWS_S3_REGION', getenv('AWS_S3_REGION') ?: 'us-east-1');
+define('AWS_ACCESS_KEY_ID', getenv('AWS_ACCESS_KEY_ID') ?: '');
+define('AWS_SECRET_ACCESS_KEY', getenv('AWS_SECRET_ACCESS_KEY') ?: '');
+define('AWS_SESSION_TOKEN', getenv('AWS_SESSION_TOKEN') ?: '');

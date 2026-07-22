@@ -212,11 +212,36 @@ function s3_sign($method, $bucket, $region, $key, $payload, $credentials) {
     return [$host, $headers];
 }
 
-// Fetches temporary credentials for the IAM role attached to this EC2
-// instance via the instance metadata service (IMDSv2). Returns null quickly
-// (short timeouts) when there's no such role to ask - e.g. running locally -
-// so this never hangs a request.
+// Gets S3 credentials one of two ways: first by asking the EC2 instance's
+// own metadata service (IMDSv2) for whatever IAM role is attached - the
+// preferred way, since those credentials are temporary and rotated
+// automatically with nothing to leak. If there's no role to ask (e.g.
+// running locally, or an AWS Academy Learner Lab where you can't attach
+// one), falls back to explicit AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/
+// AWS_SESSION_TOKEN from config.php (set as environment variables, e.g.
+// copied from a Learner Lab's "AWS Details" panel - never hardcoded/
+// committed). Returns null if neither is available, quickly (short
+// timeouts on the metadata service calls) so this never hangs a request.
 function s3_instance_credentials() {
+    $credentials = s3_role_credentials();
+    if ($credentials) {
+        return $credentials;
+    }
+
+    if (AWS_ACCESS_KEY_ID !== '' && AWS_SECRET_ACCESS_KEY !== '') {
+        return [
+            'access_key' => AWS_ACCESS_KEY_ID,
+            'secret_key' => AWS_SECRET_ACCESS_KEY,
+            'token' => AWS_SESSION_TOKEN,
+        ];
+    }
+
+    return null;
+}
+
+// The IMDSv2 half of s3_instance_credentials() - split out so the fallback
+// logic above stays easy to follow.
+function s3_role_credentials() {
     $tokenCtx = stream_context_create(['http' => [
         'method' => 'PUT',
         'header' => "X-aws-ec2-metadata-token-ttl-seconds: 21600\r\n",
@@ -265,8 +290,8 @@ function s3_instance_credentials() {
 function s3_put_object($key, $data, $contentType) {
     $credentials = s3_instance_credentials();
     if (!$credentials) {
-        return [null, 'Could not reach S3: no IAM role credentials available from this instance. '
-            . 'Is an IAM role with s3:PutObject attached to this EC2 instance?'];
+        return [null, 'Could not get S3 credentials: no IAM role is attached to this instance, and '
+            . 'AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY are not set either. See config.php.'];
     }
 
     [$host, $headers] = s3_sign('PUT', AWS_S3_BUCKET, AWS_S3_REGION, $key, $data, $credentials);

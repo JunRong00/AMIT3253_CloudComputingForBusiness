@@ -138,17 +138,26 @@ at 5MB. Where they're stored depends on `AWS_S3_BUCKET` in `config.php`:
   like `/uploads/facility_xxx.jpg`. Nothing to configure.
 - **Set**: uploaded to that S3 bucket instead (hand-written Signature Version 4
   signing over PHP's built-in stream wrapper — no AWS SDK, no Composer), and
-  `image_url` stores the full object URL. Credentials come from the IAM role attached
-  to the EC2 instance (via the metadata service), not from anything hardcoded here.
+  `image_url` stores the full object URL.
+
+Credentials are tried two ways: first an IAM role attached to the EC2 instance (via
+the metadata service, nothing hardcoded), and if that's not available — e.g. an AWS
+Academy Learner Lab where you can't attach or inspect IAM roles yourself — explicit
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/`AWS_SESSION_TOKEN` environment variables
+(copy these from the lab's "AWS Details" panel; **never hardcode them, this repo is
+public**). Those temporary credentials expire and rotate periodically — if uploads
+that were working suddenly fail, refresh them.
 
 This matters once there's more than one EC2 instance behind the ALB — a photo saved to
 local disk only exists on whichever instance handled the upload, so any other instance
 shows a broken image for it. **What's still on you**: creating the bucket + a public-read
-bucket policy (or CloudFront), attaching the IAM role with `s3:PutObject`/
-`s3:DeleteObject`, and setting `AWS_S3_BUCKET`/`AWS_S3_REGION`. The signing logic is
-verified against AWS's own SigV4 test vectors and the local-disk path is tested live
-end-to-end, but the actual S3 round-trip hasn't been tested against a real bucket —
-there wasn't one available to test against here.
+bucket policy (or CloudFront), getting one of the two credential methods above working,
+and setting `AWS_S3_BUCKET`/`AWS_S3_REGION`. The signing logic is verified against AWS's
+own SigV4 test vectors, the local-disk path is tested live end-to-end, and a signed
+request with fake credentials was confirmed to reach a real S3 endpoint and get a
+structured `403` back (not a crash/hang) — but a full successful round-trip against a
+real bucket with real credentials hasn't been tested, since there wasn't one available
+here.
 
 Notes for EC2 deployment:
 - `uploads/` needs to be writable by the web server user: `chmod 775 uploads` after

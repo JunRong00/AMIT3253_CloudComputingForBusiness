@@ -157,12 +157,24 @@ extension) and caps it at 5MB. Where it's *stored* depends on `AWS_S3_BUCKET` in
   `/uploads/xxx.jpg`. Nothing to configure; this is what you get out of the box.
 - **Set** — uploaded to that S3 bucket instead (Signature Version 4 signed requests,
   hand-written with PHP's built-in stream wrapper — no AWS SDK, no Composer), and
-  `image_url` stores the full `https://` object URL instead. Credentials are fetched
-  automatically at request time from the EC2 instance's own metadata service, so
-  nothing is hardcoded — you just need an IAM role attached to the instance/launch
-  template with `s3:PutObject` + `s3:DeleteObject` on that bucket. `<img>` rendering
-  and the "No photo yet" placeholder work identically either way; only where the bytes
+  `image_url` stores the full `https://` object URL instead. `<img>` rendering and the
+  "No photo yet" placeholder work identically either way; only where the bytes
   physically live changes.
+
+**Credentials — two ways, tried in this order:**
+1. **An IAM role attached to the EC2 instance/launch template** (`s3:PutObject` +
+   `s3:DeleteObject` on the bucket) — credentials are fetched automatically at request
+   time from the instance's own metadata service, nothing hardcoded anywhere. This is
+   the normal AWS way to do it.
+2. **Explicit temporary credentials**, for AWS Academy Learner Labs where you can't
+   attach or even inspect IAM roles yourself: copy the Access Key ID / Secret Access
+   Key / Session Token from the lab's "AWS Details" panel and set them as
+   `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_SESSION_TOKEN` environment
+   variables (never hardcode them in `config.php` — **this repo is public**, and a
+   committed key gets scraped within minutes). These are genuinely temporary and
+   **expire and rotate periodically** — if uploads that were working suddenly start
+   failing, that's almost always why; grab fresh values and update the environment
+   variable.
 
 **Why this matters for ASG specifically**: once there's more than one EC2 instance
 behind the ALB, a photo saved to local disk only exists on whichever instance happened
@@ -173,16 +185,20 @@ these apps. S3 fixes this by giving every instance the same shared storage to re
 
 **What you still have to do yourself** (this is the "extra marks" part): create the S3
 bucket and a bucket policy allowing public `s3:GetObject` (or put CloudFront in front of
-it instead), attach the IAM role to your EC2 instance/launch template, and set
+it instead), get credentials working one of the two ways above, and set
 `AWS_S3_BUCKET`/`AWS_S3_REGION`. None of that can be done from inside this codebase —
 it's real AWS console/IAM work.
 
 **A note on how confident to be in this:** the SigV4 signing logic is verified
 byte-for-byte against AWS's own published test vectors, and the "not configured" (local
 disk) path has been tested live through every app's actual admin upload/display/delete
-flow. The actual S3 round-trip itself has **not** been tested against a real bucket —
-there isn't one available to test against here. Treat it as carefully written but
-unverified against the real service until you've tried it yourself.
+flow. With fake credentials, a signed request was sent all the way to a real S3 endpoint
+and came back with a proper `403` — confirming the request-building/signing pipeline
+genuinely reaches AWS and gets a structured response, not a crash or hang. What hasn't
+been tested is a full successful round-trip against a real bucket with real, valid
+credentials — there isn't one available to test that specific case here. Treat the
+"can it talk to S3 correctly" part as verified, and the "does it work with your actual
+bucket and role" part as unverified until you've tried it yourself.
 
 Note: `uploads/` needs to be writable by the web server user (e.g. `apache` on EC2) —
 `chmod 775 uploads` (or adjust ownership) after copying the app to `/var/www/html/`.
