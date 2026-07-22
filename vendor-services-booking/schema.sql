@@ -80,3 +80,13 @@ CREATE TABLE contact_messages (
   message TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- PHP sessions are stored here instead of on local disk, so that any EC2
+-- instance behind an ALB/ASG can read a session written by a different
+-- instance. See auth.php's DbSessionHandler.
+CREATE TABLE sessions (
+  id VARCHAR(128) PRIMARY KEY,
+  data MEDIUMTEXT NOT NULL,
+  last_activity INT NOT NULL,
+  INDEX idx_last_activity (last_activity)
+);

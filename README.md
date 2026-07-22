@@ -214,6 +214,29 @@ and 3 below, not follow from them.
 4. Restrict the RDS security group to only accept traffic from the web/app tier's
    security group, on port 3306.
 
+## Sessions across multiple instances (ALB + ASG)
+
+The "Scalability" and "Load Balanced" deliverables require an Auto Scaling Group behind
+an Elastic Load Balancer — once there's more than one EC2 instance running the app,
+**PHP's default session storage breaks**. By default a session is written to a file on
+the local disk of whichever instance handled that request; the ALB has no reason to send
+a user's *next* request to that same instance, so the next instance sees no session at
+all — the user looks logged out, "My Bookings" appears empty, flash messages vanish,
+mid-way through using the site, for no visible reason. This isn't a corner case — it's
+guaranteed to happen under the load test in the "High Performing" deliverable, once
+traffic is actually spread across instances.
+
+**This is already handled** in every folder here: sessions are stored in the database
+instead of on local disk (a `sessions` table in `schema.sql`, a `DbSessionHandler` class
+wired up via `session_set_save_handler()` at the top of `auth.php`). Every instance
+reads/writes the same table via the same RDS connection every other page already uses,
+so it doesn't matter which instance an ALB routes a given request to — you don't need to
+turn on ALB "stickiness" for login state to keep working. (ALB sticky sessions on their
+own aren't a real fix here anyway — they just pin a user to one instance, which breaks
+again the moment that specific instance is terminated by an ASG scale-in.) Nothing about
+this needs to change when moving from a single EC2 instance to an ASG — it works the
+same way with one instance or ten.
+
 ## Extending for extra marks
 
 These apps already cover CRUD, accounts, a real admin panel (including user management),
